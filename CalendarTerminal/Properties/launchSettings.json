@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CalendarTerminal": {
+      "commandName": "Project",
+      "commandLineArgs": "list"
+    }
+  }
+}

@@ -1,10 +1,8 @@
 ﻿using Core;
 using Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Repositories.Context;
 using System.Collections.Immutable;
-using System.Linq.Expressions;
 
 namespace Repositories;
 
@@ -28,11 +26,17 @@ public class CalendarRepository : ICalendarRepository
     var startTime = start?.ToDateTime(TimeOnly.MinValue);
     var endTime = end?.ToDateTime(TimeOnly.MaxValue);
 
-    var entriesInDb = await _dbContext.CalendarEntries
-      .Where(x => startTime == null || x.Start >= startTime)
-      .Where(x => endTime == null || x.End <= endTime)
-      .ToListAsync(cancellationToken);
-
+    var query = _dbContext.CalendarEntries.AsQueryable();
+    if (start is not null)
+    {
+      query = query.Where(x => x.Start >= startTime);
+    }
+    if (end is not null)
+    {
+      query = query.Where(x => x.Start <= endTime);
+    }
+    var entriesInDb = await query.ToListAsync(cancellationToken);
+    
     return entriesInDb.Select(x => (CalendarEntry)x).ToImmutableHashSet();
   }
 
