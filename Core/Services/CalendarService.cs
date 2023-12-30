@@ -1,5 +1,7 @@
 ﻿using Core.Models;
 using System.Collections.Immutable;
+using System.Threading.Tasks.Sources;
+using WLib;
 
 namespace Core.Services;
 
@@ -19,18 +21,36 @@ public class CalendarService : ICalendarService
     _calendarRepository = calendarRepository;
   }
 
-  public async Task<CalendarServiceResult<IImmutableSet<CalendarEntry>>> GetCalendarEntriesAsync(GetCalendarEntryFilters filters, CancellationToken cancellationToken = default)
-    => await CalendarServiceResult<IImmutableSet<CalendarEntry>>.Create(() => _calendarRepository.GetEntriesAsync(filters.Start, filters.End, cancellationToken));
+  public async Task<IImmutableSet<CalendarEntry>> GetCalendarEntriesAsync(GetCalendarEntryFilters filters, CancellationToken cancellationToken = default)
+    => await _calendarRepository.GetEntriesAsync(filters.Start, filters.End, cancellationToken);
 
-  public async Task<CalendarServiceResult<CalendarEntry>> GetCalendarEntryAsync(Guid key, CancellationToken cancellationToken = default)
-    => await CalendarServiceResult<CalendarEntry>.Create(() => _calendarRepository.GetEntryAsync(key, cancellationToken));
+  public async Task<CalendarEntry> GetCalendarEntryAsync(Guid key, CancellationToken cancellationToken = default)
+    => await _calendarRepository.GetEntryAsync(key, cancellationToken);
 
-  public async Task<Result> RemoveCalendarEntryAsync(Guid key, CancellationToken cancellationToken = default)
-    => await Result.Create(() => _calendarRepository.DeleteEntryAsync(key, cancellationToken));
+  public async Task RemoveCalendarEntryAsync(Guid key, CancellationToken cancellationToken = default)
+    => await _calendarRepository.DeleteEntryAsync(key, cancellationToken);
 
-  public async Task<Result> StoreCalendarEntryAsync(NewCalendarEntry entry, CancellationToken cancellationToken = default)
-    => await Result.Create(() => _calendarRepository.StoreEntryAsync(entry, cancellationToken));
+  public async Task StoreCalendarEntryAsync(NewCalendarEntry entry, CancellationToken cancellationToken = default)
+    => await _calendarRepository.StoreEntryAsync(entry, cancellationToken);
 
-  public async Task<Result> UpdateCalendarEntryAsync(UpdateCalendarEntry entry, CancellationToken cancellationToken = default)
-    => await Result.Create(() => _calendarRepository.UpdateEntryAsync(entry, cancellationToken));
+  public async Task<DateTime?> SuggestCalendarEntryAsync(DateOnly start, DateOnly end, TimeSpan length, TimeOnly startTime, TimeOnly endTime, bool skipWeekends, CancellationToken cancellationToken = default)
+  {
+    var conflictingEntries = await _calendarRepository.GetEntriesAsync(start, end, cancellationToken);
+
+    var conflictingRanges = conflictingEntries.Select(x => new DateTimeRange(x.Date.Start, x.Date.End)).ToImmutableList();
+
+    var timeEnumerator = new DateTimeEnumerator(start, end, length, startTime, endTime, skipWeekends);
+    foreach (var time in timeEnumerator)
+    {
+      if (conflictingRanges.All(x => !x.ConflictsWith(time)))
+      {
+        return time;
+      }
+    }
+
+    return null;
+  }
+
+  public async Task UpdateCalendarEntryAsync(UpdateCalendarEntry entry, CancellationToken cancellationToken = default)
+    => await _calendarRepository.UpdateEntryAsync(entry, cancellationToken);
 }

@@ -27,15 +27,8 @@ namespace Calendar.Controllers
         cancellationToken);
 
       var result = new List<CalendarEntryJsonModel>();
-      entries.OnSuccess(e =>
-      {
-        result.AddRange(e.Select(x => (CalendarEntryJsonModel)x));
-      });
-      entries.OnError((_) =>
-      {
-        Response.StatusCode = 500;
-      });
-
+      result.AddRange(entries.Select(x => (CalendarEntryJsonModel)x));
+      
       return result;
     }
   }

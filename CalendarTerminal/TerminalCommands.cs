@@ -6,11 +6,11 @@ public class TerminalCommands
 {
   private readonly TerminalService _terminalService;
 
-  public TerminalCommands(ICalendarService calendarService)
+  public TerminalCommands(TerminalService terminalService)
   {
-    _terminalService = new TerminalService(calendarService);
+    _terminalService = terminalService;
   }
-  
+
   [Command("list")]
   public async Task ListEntries()
   {
@@ -26,11 +26,12 @@ public class TerminalCommands
   [Command("create")]
   public async Task CreateEntry(
     [Option] DateTime start, 
-    [Option] DateTime? end,
+    [Option] DateTime end,
+    [Option] bool? isFullDay,
     [Option] string title,
     [Argument] string? content)
   {
-    await _terminalService.CreateEntry(start, end, title, content);
+    await _terminalService.CreateEntry(start, end, isFullDay ?? false, title, content);
   }
 
   [Command("update")]
@@ -38,15 +39,28 @@ public class TerminalCommands
     [Argument] Guid key,
     [Option] DateTime? start,
     [Option] DateTime? end,
+    [Option] bool? isFullDay,
     [Option] string? title,
     [Option] string? content)
   {
-    await _terminalService.UpdateEntry(key, start, end, title, content);
+    await _terminalService.UpdateEntry(key, start, end, isFullDay, title, content);
   }
 
   [Command("delete")]
   public async Task DeleteEntry([Argument] Guid key)
   {
     await _terminalService.DeleteEntry(key);
+  }
+
+  [Command("suggest")]
+  public async Task SuggestTime(
+    [Argument] DateOnly start, 
+    [Argument] DateOnly end,
+    [Argument] TimeSpan length,
+    [Option] TimeOnly? startTime,
+    [Option] TimeOnly? endTime,
+    [Option] bool? skipWeekends)
+  {
+    await _terminalService.SuggestEntry(start, end, length, startTime ?? new TimeOnly(8, 0), endTime ?? new TimeOnly(17, 0), skipWeekends ?? true);
   }
 }

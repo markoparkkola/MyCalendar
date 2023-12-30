@@ -26,6 +26,7 @@ appBuilder.Services.AddDbContextPool<CalendarDbContext>(options =>
 );
 appBuilder.Services.AddScoped<ICalendarRepository, CalendarRepository>();
 appBuilder.Services.AddScoped<ICalendarService, CalendarService>();
+appBuilder.Services.AddSingleton<CalendarServiceFacade>();
 appBuilder.Services.AddSingleton<TerminalService>();
 
 var host = appBuilder.Build();

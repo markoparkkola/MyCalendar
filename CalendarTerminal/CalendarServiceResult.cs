@@ -1,4 +1,6 @@
-﻿namespace Core.Services;
+﻿using WLib;
+
+namespace CalendarTerminal;
 
 public class CalendarServiceResult<TResult> : Result<TResult, Exception>
 {

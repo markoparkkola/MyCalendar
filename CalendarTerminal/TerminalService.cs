@@ -4,11 +4,11 @@ using System.Collections.Immutable;
 
 namespace CalendarTerminal;
 
-internal class TerminalService
+public class TerminalService
 {
-  private readonly ICalendarService _calendarService;
+  private readonly CalendarServiceFacade _calendarService;
 
-  public TerminalService(ICalendarService calendarService)
+  public TerminalService(CalendarServiceFacade calendarService)
   {
     _calendarService = calendarService;
   }
@@ -40,13 +40,14 @@ internal class TerminalService
     });
   }
 
-  public async Task CreateEntry(DateTime start, DateTime? end, string title, string? content)
+  public async Task CreateEntry(DateTime start, DateTime end, bool isFullDay, string title, string? content)
   {
-    var isWholeDay = end is null;
-
     var result = await _calendarService.StoreCalendarEntryAsync(
       new NewCalendarEntry(
-        new CalendarDate(end is null ? start.Date : start, end),
+        new CalendarDate(
+          isFullDay ? start.Date : start, 
+          isFullDay ? end.Date : end,
+          isFullDay),
         title, 
         content ?? ""
         )
@@ -54,20 +55,17 @@ internal class TerminalService
     result.OnSuccess(() => Console.WriteLine("Created."));
   }
 
-  public async Task UpdateEntry(Guid key, DateTime? start, DateTime? end, string? title, string? content)
+  public async Task UpdateEntry(Guid key, DateTime? start, DateTime? end, bool? isFullDay, string? title, string? content)
   {
     var result = await _calendarService.GetCalendarEntryAsync(key);
     result.OnSuccess(async (entry) =>
     {
-      DateTime startDate = start is null ?
-            entry.Date.Start :
-            end is null ?
-              start.Value.Date :
-              start.Value;
-
       var updateResult = await _calendarService.UpdateCalendarEntryAsync(
         new UpdateCalendarEntry(key,
-          new CalendarDate(startDate, end),
+          new CalendarDate(
+            ResolveDate(start, entry.Date.Start, isFullDay ?? entry.Date.IsFullDay),
+            ResolveDate(end, entry.Date.End, isFullDay ?? entry.Date.IsFullDay),
+            isFullDay ?? entry.Date.IsFullDay),
           title ?? entry.Title,
           content ?? entry.Content
           )
@@ -84,5 +82,19 @@ internal class TerminalService
   {
     var result = await _calendarService.RemoveCalendarEntryAsync(key);
     result.OnSuccess(() => Console.WriteLine("Removed."));
+  }
+
+  internal async Task SuggestEntry(DateOnly start, DateOnly end, TimeSpan length, TimeOnly startTime, TimeOnly endTime, bool skipWeekends)
+  {
+    var result = await _calendarService.SuggestCalendarEntryAsync(start, end, length, startTime, endTime, skipWeekends);
+    result.OnSuccess((time) => Console.WriteLine((object?)time ?? "No suggestion."));
+  }
+
+  private static DateTime ResolveDate(DateTime? date, DateTime @default, bool isFullDay)
+  {
+    static DateTime GetDate(DateTime date, bool isFullDay)
+      => isFullDay ? date.Date : date;
+
+    return GetDate(date ?? @default, isFullDay);
   }
 }
