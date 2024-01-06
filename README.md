@@ -2,6 +2,10 @@
 
 Test project for MariaDb database. 
 
+## License
+
+Project is set to BSD-2 license but I really don't care what you do with the code. You can copy whole or parts of it and use it any way you want, or not use it at all!
+
 ## Motivation
 
 Primrary motivation was to test MariaDb as persistent storage.
