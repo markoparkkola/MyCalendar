@@ -7,6 +7,12 @@
 /// from the function. Caller then calls <see cref="OnSuccess(Action)"/> to act when
 /// the result is success and optionaly handle errors in <see cref="OnError(Action{Exception})" />.
 /// </para>
+/// <para>
+/// Note that OnError returns Exception object as parameter. That is not very flexible so
+/// you might want to have OnError's parameter as generic and possibly OnSuccess could return
+/// generic parameter also. And in fact, if you see CalendarServiceResult class in 
+/// CalendarTerminal app, the result type of OnSuccess is made generic there.
+/// </para>
 /// </summary>
 public abstract class ResultBase
 {

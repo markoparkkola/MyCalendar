@@ -1,6 +1,5 @@
 ﻿using Core.Models;
 using System.Collections.Immutable;
-using System.Threading.Tasks.Sources;
 using WLib;
 
 namespace Core.Services;
@@ -39,7 +38,7 @@ public class CalendarService : ICalendarService
 
     var conflictingRanges = conflictingEntries.Select(x => new DateTimeRange(x.Date.Start, x.Date.End)).ToImmutableList();
 
-    var timeEnumerator = new DateTimeEnumerator(start, end, length, startTime, endTime, skipWeekends);
+    var timeEnumerator = new DateTimeRangeEnumerator(start, end, length, startTime, endTime, skipWeekends);
     foreach (var time in timeEnumerator)
     {
       if (conflictingRanges.All(x => !x.ConflictsWith(time)))

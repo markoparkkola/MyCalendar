@@ -5,6 +5,10 @@ using WLib;
 
 namespace CalendarTerminal;
 
+/// <summary>
+/// Just a facade or wrapper to demonstrate the usage of Result class.
+/// The app would work perfectly fine without this also.
+/// </summary>
 public class CalendarServiceFacade
 {
   private readonly ICalendarService _calendarService;
