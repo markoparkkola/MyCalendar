@@ -28,5 +28,6 @@ Some of the features I've already designed but not been able to implement becaus
 - [ ] Multi user (using for instance IUSerProvider interface passed on by DI)
 - [ ] Publis calendars (user rights)
 - [ ] Shared calendars (user rights)
+- [ ] Convert appointment suggestion code to SQL if possible
 - [ ] Test cases (unit tests, integration tests, e2e tests, performance tests)
 - [ ] Documentation (including this readme)
